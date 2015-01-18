@@ -169,21 +169,29 @@ class ImageLabel(QLabel):
             self.setMaxY(y, graphY)
 
     @pyqtSlot(bool)
-    def on_xAxisLogarithmicAction_toggled(self, v):
-        self.xLogarithmic = v
-        self.reset()
-        self.update()
+    def on_xAxisLogarithmicAction_triggered(self, v):
+        self.setXAxisLogarithmicAction(v)
 
     @pyqtSlot(bool)
-    def on_yAxisLogarithmicAction_toggled(self, v):
-        self.yLogarithmic = v
-        self.reset()
-        self.update()
+    def on_yAxisLogarithmicAction_triggered(self, v):
+        self.setYAxisLogarithmicAction(v)
 
     @pyqtSlot(bool)
     def on_showGridAction_toggled(self, v):
         self.showGrid = v
         self.update()
+
+    def setXAxisLogarithmicAction(self, v):
+        self.xLogarithmic = v
+        self.reset()
+        self.update()
+        self.ui.xAxisLogarithmicAction.setChecked(self.xLogarithmic)
+
+    def setYAxisLogarithmicAction(self, v):
+        self.yLogarithmic = v
+        self.reset()
+        self.update()
+        self.ui.yAxisLogarithmicAction.setChecked(self.yLogarithmic)
 
     def setMinX(self, x, graphX):
         self.minX = x

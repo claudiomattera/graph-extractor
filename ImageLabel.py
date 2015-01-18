@@ -123,28 +123,28 @@ class ImageLabel(QLabel):
         self.yAxisLogarithmicAction.setChecked(self.yLogarithmic)
 
     def setMinX(self, x, graphX):
-        self.minX = x / self.scale
+        self.minX = x
         self.minXGraph = graphX
 
         self.update()
         self.setMinXAction.setChecked(self.minXGraph is not None)
 
     def setMinY(self, y, graphY):
-        self.minY = y / self.scale
+        self.minY = y
         self.minYGraph = graphY
 
         self.update()
         self.setMinYAction.setChecked(self.minYGraph is not None)
 
     def setMaxX(self, x, graphX):
-        self.maxX = x / self.scale
+        self.maxX = x
         self.maxXGraph = graphX
 
         self.update()
         self.setMaxXAction.setChecked(self.maxXGraph is not None)
 
     def setMaxY(self, y, graphY):
-        self.maxY = y / self.scale
+        self.maxY = y
         self.maxYGraph = graphY
 
         self.update()
@@ -184,8 +184,7 @@ class ImageLabel(QLabel):
         if not self.ready():
             return
 
-        x = event.pos().x() / self.scale
-        y = event.pos().y() / self.scale
+        (x, y) = self.mapFromScaled(event.pos())
         graphX, graphY = self.mapToGraph(x, y)
         self.mouseMoved.emit(graphX, graphY)
 
@@ -193,17 +192,14 @@ class ImageLabel(QLabel):
         if event.button() == Qt.LeftButton:
             if not self.ready():
                 return
-            x = event.pos().x() / self.scale
-            y = event.pos().y() / self.scale
+            (x, y) = self.mapFromScaled(event.pos())
             self.samples.append((x, y))
             self.update()
 
             graphX, graphY = self.mapToGraph(x, y)
             self.clicked.emit(graphX, graphY)
         elif event.button() == Qt.RightButton:
-            x = event.pos().x()
-            y = event.pos().y()
-            self.pos = (x, y)
+            self.pos = self.mapFromScaled(event.pos())
             self.menu.popup(self.mapToGlobal(event.pos()))
 
     def paintEvent(self, event):
@@ -221,17 +217,12 @@ class ImageLabel(QLabel):
             pen.setColor(self.settings.value(
                 Settings.AXES_COLOR_KEY, Settings.DEFAULT_AXES_COLOR))
             pen.setWidth(3)
-
             draw.setPen(pen)
-            x0, y0 = self.minX, self.minY
-            x1, y1 = self.maxX, self.minY
-            x2, y2 = self.minX, self.maxY
-            x0 *= self.scale
-            y0 *= self.scale
-            x1 *= self.scale
-            y1 *= self.scale
-            x2 *= self.scale
-            y2 *= self.scale
+
+            x0, y0 = self.mapToScaled((self.minX, self.minY))
+            x1, y1 = self.mapToScaled((self.maxX, self.minY))
+            x2, y2 = self.mapToScaled((self.minX, self.maxY))
+
             draw.drawLine(x0-20, y0, x1, y1)
             draw.drawLine(x0, y0+20, x2, y2)
             draw.drawLine(x1, y1, x1 - 10, y1 - 6)
@@ -251,9 +242,8 @@ class ImageLabel(QLabel):
             Settings.SAMPLES_COLOR_KEY, Settings.DEFAULT_SAMPLES_COLOR))
         pen.setWidth(10)
         draw.setPen(pen)
-        for (x, y) in self.samples:
-            x *= self.scale
-            y *= self.scale
+        for sample in self.samples:
+            (x, y) = self.mapToScaled(sample)
             draw.drawPoint(x, y)
 
         if len(self.samples) > 0:
@@ -266,12 +256,8 @@ class ImageLabel(QLabel):
                 pen.setWidth(2)
                 draw.setPen(pen)
                 for i in range(1, len(self.samples)):
-                    (x0, y0) = self.samples[i-1]
-                    (x1, y1) = self.samples[i]
-                    x0 *= self.scale
-                    y0 *= self.scale
-                    x1 *= self.scale
-                    y1 *= self.scale
+                    (x0, y0) = self.mapToScaled(self.samples[i-1])
+                    (x1, y1) = self.mapToScaled(self.samples[i])
                     draw.drawLine(x0, y0, x1, y1)
 
         draw.end()
@@ -288,6 +274,16 @@ class ImageLabel(QLabel):
             self.maxYGraph
             ]
         return all(x is not None for x in ls)
+
+    def mapFromScaled(self, pos):
+        x = pos.x() / self.scale
+        y = pos.y() / self.scale
+        return (x, y)
+
+    def mapToScaled(self, pos):
+        x = pos[0] * self.scale
+        y = pos[1] * self.scale
+        return (x, y)
 
     @pyqtSlot(float, float)
     def on_label_mouseMoved(self, x, y):

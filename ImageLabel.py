@@ -77,8 +77,10 @@ class ImageLabel(QLabel):
         self.setMaxXAction.triggered.connect(self.on_setMaxXAction_triggered)
         self.setMaxYAction.triggered.connect(self.on_setMaxYAction_triggered)
         self.showGridAction.triggered.connect(self.on_showGridAction_triggered)
-        self.xAxisLogarithmicAction.triggered.connect(self.on_xAxisLogarithmicAction_triggered)
-        self.yAxisLogarithmicAction.triggered.connect(self.on_yAxisLogarithmicAction_triggered)
+        self.xAxisLogarithmicAction.triggered.connect(
+            self.on_xAxisLogarithmicAction_triggered)
+        self.yAxisLogarithmicAction.triggered.connect(
+            self.on_yAxisLogarithmicAction_triggered)
 
         self.on_showGridAction_triggered(True)
 
@@ -258,9 +260,12 @@ class ImageLabel(QLabel):
             draw.drawLine(x2, y2, x2 - 6, y2 + 10)
             draw.drawLine(x2, y2, x2 + 6, y2 + 10)
 
-            draw.drawText(x0+10, y0-10, "(%.1f × %.3f)" % (self.minXGraph, self.minYGraph))
-            draw.drawText(x1+10, y1+10, "(%.1f × %.3f)" % (self.maxXGraph, self.minYGraph))
-            draw.drawText(x2+10, y2+10, "(%.1f × %.3f)" % (self.minXGraph, self.maxYGraph))
+            draw.drawText(x0+10, y0-10, "(%.1f × %.3f)" %
+                (self.minXGraph, self.minYGraph))
+            draw.drawText(x1+10, y1+10, "(%.1f × %.3f)" %
+                (self.maxXGraph, self.minYGraph))
+            draw.drawText(x2+10, y2+10, "(%.1f × %.3f)" %
+                (self.minXGraph, self.maxYGraph))
 
         pen = QPen()
         pen.setColor(self.settings.value(
@@ -272,7 +277,8 @@ class ImageLabel(QLabel):
 
         if len(self.samples) > 0:
             drawLines = self.settings.value(
-                Settings.DRAW_LINES_BETWEEN_SAMPLES_KEY, Settings.DEFAULT_DRAW_LINES_BETWEEN_SAMPLES)
+                Settings.DRAW_LINES_BETWEEN_SAMPLES_KEY,
+                Settings.DEFAULT_DRAW_LINES_BETWEEN_SAMPLES)
             if drawLines.__class__ == str:
                 drawLines = drawLines == 'true'
             if drawLines:

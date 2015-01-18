@@ -96,8 +96,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_pathLengthAction_triggered(self):
-        items = self.ui.listWidget.findItems('*', Qt.MatchWildcard)
-        coordinates = list(map(lambda item: (item.data(Qt.UserRole), item.data(Qt.UserRole + 1)), items))
+        coordinates = list(self.getCoordinates())
         totalDistance = lengthOfPath(coordinates)
         QMessageBox.information(
             self,
@@ -107,8 +106,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_polygonAreaAction_triggered(self):
-        items = self.ui.listWidget.findItems('*', Qt.MatchWildcard)
-        coordinates = list(map(lambda item: (item.data(Qt.UserRole), item.data(Qt.UserRole + 1)), items))
+        coordinates = list(self.getCoordinates())
         totalArea = areaOfPolygon(coordinates)
         QMessageBox.information(
             self,
@@ -127,9 +125,12 @@ class MainWindow(QMainWindow):
         item.setData(Qt.UserRole + 1, y)
         self.ui.listWidget.addItem(item)
 
-    def getCoordinatesAsCsv(self):
+    def getCoordinates(self):
         items = self.ui.listWidget.findItems('*', Qt.MatchWildcard)
-        coordinates = map(lambda item: (item.data(Qt.UserRole), item.data(Qt.UserRole + 1)), items)
+        return map(lambda item: (item.data(Qt.UserRole), item.data(Qt.UserRole + 1)), items)
+
+    def getCoordinatesAsCsv(self):
+        coordinates = self.getCoordinates()
         lines = map(lambda coordinate: "%f,%f" % coordinate, coordinates)
         return 'x,y\n' + '\n'.join(lines)
 

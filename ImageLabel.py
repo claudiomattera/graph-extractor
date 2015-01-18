@@ -42,6 +42,7 @@ class ImageLabel(QLabel):
         self.maxY = None
         self.maxYGraph = None
 
+
         self.setMinXAction = QAction(self.tr('Set Min X'), self)
         self.setMinXAction.setCheckable(True)
         self.setMinYAction = QAction(self.tr('Set Min Y'), self)
@@ -68,8 +69,6 @@ class ImageLabel(QLabel):
         self.menu.addAction(self.xAxisLogarithmicAction)
         self.menu.addAction(self.yAxisLogarithmicAction)
 
-        self.reset()
-
         self.pos = None
 
         self.setMinXAction.triggered.connect(self.on_setMinXAction_triggered)
@@ -86,7 +85,7 @@ class ImageLabel(QLabel):
 
     def loadImage(self, filename):
         self.originalPixmap = QPixmap(filename)
-        self.reset()
+        self.resizeImage()
         self.update()
 
     def ready(self):
@@ -102,9 +101,12 @@ class ImageLabel(QLabel):
             ]
         return all(x is not None for x in ls)
 
-    def reset(self, k = 1.):
+    def scaleImage(self, k):
         self.scale *= k
+        self.resizeImage()
+        self.update()
 
+    def resizeImage(self):
         if self.originalPixmap:
             size = self.originalPixmap.size()
             self.setPixmap(
@@ -114,68 +116,41 @@ class ImageLabel(QLabel):
                     Qt.IgnoreAspectRatio,
                     Qt.SmoothTransformation))
 
-        if self.minX is not None:
-            self.minX *= k
-
-        if self.maxX is not None:
-            self.maxX *= k
-
-        if self.minY is not None:
-            self.minY *= k
-
-        if self.maxY is not None:
-            self.maxY *= k
-
-        if not self.ready():
-            return
-
-        self.origin = (self.minX, self.minY)
-        self.maxXPoint = (self.maxX, self.minY)
-        self.maxYPoint = (self.minX, self.maxY)
-
-        self.samples = list(map(lambda p: (k * p[0], k * p[1]), self.samples))
-
     def setXAxisLogarithmicAction(self, v):
         self.xLogarithmic = v
-        self.reset()
         self.update()
         self.xAxisLogarithmicAction.setChecked(self.xLogarithmic)
 
     def setYAxisLogarithmicAction(self, v):
         self.yLogarithmic = v
-        self.reset()
         self.update()
         self.yAxisLogarithmicAction.setChecked(self.yLogarithmic)
 
     def setMinX(self, x, graphX):
-        self.minX = x
+        self.minX = x / self.scale
         self.minXGraph = graphX
 
-        self.reset()
         self.update()
         self.setMinXAction.setChecked(self.minXGraph is not None)
 
     def setMinY(self, y, graphY):
-        self.minY = y
+        self.minY = y / self.scale
         self.minYGraph = graphY
 
-        self.reset()
         self.update()
         self.setMinYAction.setChecked(self.minYGraph is not None)
 
     def setMaxX(self, x, graphX):
-        self.maxX = x
+        self.maxX = x / self.scale
         self.maxXGraph = graphX
 
-        self.reset()
         self.update()
         self.setMaxXAction.setChecked(self.maxXGraph is not None)
 
     def setMaxY(self, y, graphY):
-        self.maxY = y
+        self.maxY = y / self.scale
         self.maxYGraph = graphY
 
-        self.reset()
         self.update()
         self.setMaxYAction.setChecked(self.maxYGraph is not None)
 
@@ -187,6 +162,8 @@ class ImageLabel(QLabel):
         return map(lambda p: self.mapToGraph(p[0], p[1]), self.samples)
 
     def mapToGraph(self, x, y):
+        # (x, y) must be relative to original size image.
+
         evalX = (lambda x: math.log(x, 10)) if self.xLogarithmic else (lambda x: x)
         evalY = (lambda y: math.log(y, 10)) if self.yLogarithmic else (lambda y: y)
         outputX = (lambda x: 10**x) if self.xLogarithmic else (lambda x: x)
@@ -211,8 +188,8 @@ class ImageLabel(QLabel):
         if not self.ready():
             return
 
-        x = event.pos().x()
-        y = event.pos().y()
+        x = event.pos().x() / self.scale
+        y = event.pos().y() / self.scale
         graphX, graphY = self.mapToGraph(x, y)
         self.mouseMoved.emit(graphX, graphY)
 
@@ -220,8 +197,8 @@ class ImageLabel(QLabel):
         if event.button() == Qt.LeftButton:
             if not self.ready():
                 return
-            x = event.pos().x()
-            y = event.pos().y()
+            x = event.pos().x() / self.scale
+            y = event.pos().y() / self.scale
             self.samples.append((x, y))
             self.update()
 
@@ -250,9 +227,15 @@ class ImageLabel(QLabel):
             pen.setWidth(3)
 
             draw.setPen(pen)
-            x0, y0 = self.origin
-            x1, y1 = self.maxXPoint
-            x2, y2 = self.maxYPoint
+            x0, y0 = self.minX, self.minY
+            x1, y1 = self.maxX, self.minY
+            x2, y2 = self.minX, self.maxY
+            x0 *= self.scale
+            y0 *= self.scale
+            x1 *= self.scale
+            y1 *= self.scale
+            x2 *= self.scale
+            y2 *= self.scale
             draw.drawLine(x0-20, y0, x1, y1)
             draw.drawLine(x0, y0+20, x2, y2)
             draw.drawLine(x1, y1, x1 - 10, y1 - 6)
@@ -273,6 +256,8 @@ class ImageLabel(QLabel):
         pen.setWidth(10)
         draw.setPen(pen)
         for (x, y) in self.samples:
+            x *= self.scale
+            y *= self.scale
             draw.drawPoint(x, y)
 
         if len(self.samples) > 0:
@@ -287,6 +272,10 @@ class ImageLabel(QLabel):
                 for i in range(1, len(self.samples)):
                     (x0, y0) = self.samples[i-1]
                     (x1, y1) = self.samples[i]
+                    x0 *= self.scale
+                    y0 *= self.scale
+                    x1 *= self.scale
+                    y1 *= self.scale
                     draw.drawLine(x0, y0, x1, y1)
 
         draw.end()
@@ -367,10 +356,8 @@ class ImageLabel(QLabel):
 
     @pyqtSlot()
     def zoomIn(self):
-        self.reset(1 / self.ZOOM_FACTOR)
-        self.update()
+        self.scaleImage(1 / self.ZOOM_FACTOR)
 
     @pyqtSlot()
     def zoomOut(self):
-        self.reset(1 * self.ZOOM_FACTOR)
-        self.update()
+        self.scaleImage(1 * self.ZOOM_FACTOR)

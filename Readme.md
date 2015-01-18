@@ -20,7 +20,6 @@ This program depends on [Python][python] and on the library [PyQt 5][pyqt5].
 In order to run the program first a couple of files must be processed by PyQt. Run the commands
 
     pyuic5 MainWindow.ui -o ui_MainWindow.py
-    pyuic5 ImageLabel.ui -o ui_ImageLabel.py
     pyuic5 SettingsDialog.ui -o ui_SettingsDialog.py
     pyrcc5 icons.qrc -o icons_rc.py
 

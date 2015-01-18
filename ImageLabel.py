@@ -1,7 +1,6 @@
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QSettings
 from PyQt5.QtGui import QPixmap, QPainter, QPen, QColor
-from PyQt5.QtWidgets import QLabel, QAction, QMenu, QInputDialog
-from ui_ImageLabel import Ui_ImageLabel
+from PyQt5.QtWidgets import QWidget, QLabel, QAction, QMenu, QInputDialog
 import math
 import Settings
 
@@ -19,12 +18,10 @@ class ImageLabel(QLabel):
     def __init__(self, parent=None):
         super(ImageLabel, self).__init__(parent)
 
-        self.ui = Ui_ImageLabel()
-        self.ui.setupUi(self)
-
         self.setMouseTracking(True)
-        self.setScaledContents(True)
         self.showGrid = True
+
+        self.originalPixmap = None
 
         self.scale = 1.
 
@@ -45,30 +42,48 @@ class ImageLabel(QLabel):
         self.maxY = None
         self.maxYGraph = None
 
+        self.setMinXAction = QAction(self.tr('Set Min X'), self)
+        self.setMinXAction.setCheckable(True)
+        self.setMinYAction = QAction(self.tr('Set Min Y'), self)
+        self.setMinYAction.setCheckable(True)
+        self.setMaxXAction = QAction(self.tr('Set Max X'), self)
+        self.setMaxXAction.setCheckable(True)
+        self.setMaxYAction = QAction(self.tr('Set Max Y'), self)
+        self.setMaxYAction.setCheckable(True)
+        self.showGridAction = QAction(self.tr('Show Grid'), self)
+        self.showGridAction.setCheckable(True)
+        self.xAxisLogarithmicAction = QAction(self.tr('X Axis Logarithmic'), self)
+        self.xAxisLogarithmicAction.setCheckable(True)
+        self.yAxisLogarithmicAction = QAction(self.tr('Y Axis Logarithmic'), self)
+        self.yAxisLogarithmicAction.setCheckable(True)
+
+        self.menu = QMenu(self)
+
+        self.menu.addAction(self.setMinXAction)
+        self.menu.addAction(self.setMinYAction)
+        self.menu.addAction(self.setMaxXAction)
+        self.menu.addAction(self.setMaxYAction)
+        self.menu.addSeparator()
+        self.menu.addAction(self.showGridAction)
+        self.menu.addAction(self.xAxisLogarithmicAction)
+        self.menu.addAction(self.yAxisLogarithmicAction)
 
         self.reset()
 
         self.pos = None
 
-        self.menu = QMenu(self)
-        self.menu.addAction(self.ui.setMinXAction)
-        self.menu.addAction(self.ui.setMinYAction)
-        self.menu.addAction(self.ui.setMaxXAction)
-        self.menu.addAction(self.ui.setMaxYAction)
-        self.menu.addSeparator()
-        self.menu.addAction(self.ui.showGridAction)
-        self.menu.addAction(self.ui.xAxisLogarithmicAction)
-        self.menu.addAction(self.ui.yAxisLogarithmicAction)
+        self.setMinXAction.triggered.connect(self.on_setMinXAction_triggered)
+        self.setMinYAction.triggered.connect(self.on_setMinYAction_triggered)
+        self.setMaxXAction.triggered.connect(self.on_setMaxXAction_triggered)
+        self.setMaxYAction.triggered.connect(self.on_setMaxYAction_triggered)
+        self.showGridAction.triggered.connect(self.on_showGridAction_triggered)
+        self.xAxisLogarithmicAction.triggered.connect(self.on_xAxisLogarithmicAction_triggered)
+        self.yAxisLogarithmicAction.triggered.connect(self.on_yAxisLogarithmicAction_triggered)
 
-        self.ui.showGridAction.setChecked(self.showGrid)
-        self.enableMenu(False)
-
-    def enableMenu(self, enabled):
-        self.menu.setEnabled(enabled)
+        self.on_showGridAction_triggered(True)
 
     def loadImage(self, filename):
-        self.setPixmap(QPixmap(filename))
-        self.enableMenu(True)
+        self.originalPixmap = QPixmap(filename)
         self.reset()
         self.update()
 
@@ -88,8 +103,14 @@ class ImageLabel(QLabel):
     def reset(self, k = 1.):
         self.scale *= k
 
-        if self.pixmap():
-            self.resize(self.scale * self.pixmap().size())
+        if self.originalPixmap:
+            size = self.originalPixmap.size()
+            self.setPixmap(
+                self.originalPixmap.scaled(
+                    self.scale * size.width(),
+                    self.scale * size.height(),
+                    Qt.IgnoreAspectRatio,
+                    Qt.SmoothTransformation))
 
         if self.minX is not None:
             self.minX *= k
@@ -112,86 +133,17 @@ class ImageLabel(QLabel):
 
         self.samples = list(map(lambda p: (k * p[0], k * p[1]), self.samples))
 
-    @pyqtSlot()
-    def on_setMinXAction_triggered(self):
-        (graphX, ok) = QInputDialog.getDouble(
-            self,
-            self.tr('Set Min X'),
-            self.tr('Set the minimal value of X'),
-            self.DEFAULT_VALUE,
-            self.MIN_VALUE,
-            self.MAX_VALUE,
-            self.DIGITS)
-        if ok:
-            (x, y) = self.pos
-            self.setMinX(x, graphX)
-
-    @pyqtSlot()
-    def on_setMinYAction_triggered(self):
-        (graphY, ok) = QInputDialog.getDouble(
-            self,
-            self.tr('Set Min Y'),
-            self.tr('Set the minimal value of Y'),
-            self.DEFAULT_VALUE,
-            self.MIN_VALUE,
-            self.MAX_VALUE,
-            self.DIGITS)
-        if ok:
-            (x, y) = self.pos
-            self.setMinY(y, graphY)
-
-    @pyqtSlot()
-    def on_setMaxXAction_triggered(self):
-        (graphX, ok) = QInputDialog.getDouble(
-            self,
-            self.tr('Set Max X'),
-            self.tr('Set the maximal value of X'),
-            self.DEFAULT_VALUE,
-            self.MIN_VALUE,
-            self.MAX_VALUE,
-            self.DIGITS)
-        if ok:
-            (x, y) = self.pos
-            self.setMaxX(x, graphX)
-
-    @pyqtSlot()
-    def on_setMaxYAction_triggered(self):
-        (graphY, ok) = QInputDialog.getDouble(
-            self,
-            self.tr('Set Origin - Y'),
-            self.tr('Set the maximal value of Y'),
-            self.DEFAULT_VALUE,
-            self.MIN_VALUE,
-            self.MAX_VALUE,
-            self.DIGITS)
-        if ok:
-            (x, y) = self.pos
-            self.setMaxY(y, graphY)
-
-    @pyqtSlot(bool)
-    def on_xAxisLogarithmicAction_triggered(self, v):
-        self.setXAxisLogarithmicAction(v)
-
-    @pyqtSlot(bool)
-    def on_yAxisLogarithmicAction_triggered(self, v):
-        self.setYAxisLogarithmicAction(v)
-
-    @pyqtSlot(bool)
-    def on_showGridAction_toggled(self, v):
-        self.showGrid = v
-        self.update()
-
     def setXAxisLogarithmicAction(self, v):
         self.xLogarithmic = v
         self.reset()
         self.update()
-        self.ui.xAxisLogarithmicAction.setChecked(self.xLogarithmic)
+        self.xAxisLogarithmicAction.setChecked(self.xLogarithmic)
 
     def setYAxisLogarithmicAction(self, v):
         self.yLogarithmic = v
         self.reset()
         self.update()
-        self.ui.yAxisLogarithmicAction.setChecked(self.yLogarithmic)
+        self.yAxisLogarithmicAction.setChecked(self.yLogarithmic)
 
     def setMinX(self, x, graphX):
         self.minX = x
@@ -199,7 +151,7 @@ class ImageLabel(QLabel):
 
         self.reset()
         self.update()
-        self.ui.setMinXAction.setChecked(self.minXGraph is not None)
+        self.setMinXAction.setChecked(self.minXGraph is not None)
 
     def setMinY(self, y, graphY):
         self.minY = y
@@ -207,7 +159,7 @@ class ImageLabel(QLabel):
 
         self.reset()
         self.update()
-        self.ui.setMinYAction.setChecked(self.minYGraph is not None)
+        self.setMinYAction.setChecked(self.minYGraph is not None)
 
     def setMaxX(self, x, graphX):
         self.maxX = x
@@ -215,7 +167,7 @@ class ImageLabel(QLabel):
 
         self.reset()
         self.update()
-        self.ui.setMaxXAction.setChecked(self.maxXGraph is not None)
+        self.setMaxXAction.setChecked(self.maxXGraph is not None)
 
     def setMaxY(self, y, graphY):
         self.maxY = y
@@ -223,7 +175,7 @@ class ImageLabel(QLabel):
 
         self.reset()
         self.update()
-        self.ui.setMaxYAction.setChecked(self.maxYGraph is not None)
+        self.setMaxYAction.setChecked(self.maxYGraph is not None)
 
     def clearSamples(self):
         self.samples = []
@@ -327,6 +279,80 @@ class ImageLabel(QLabel):
                     draw.drawLine(x0, y0, x1, y1)
 
         draw.end()
+
+    @pyqtSlot(float, float)
+    def on_label_mouseMoved(self, x, y):
+        self.mouseMoved.emit(x, y)
+
+    @pyqtSlot()
+    def on_setMinXAction_triggered(self):
+        (graphX, ok) = QInputDialog.getDouble(
+            self,
+            self.tr('Set Min X'),
+            self.tr('Set the minimal value of X'),
+            self.DEFAULT_VALUE,
+            self.MIN_VALUE,
+            self.MAX_VALUE,
+            self.DIGITS)
+        if ok:
+            (x, y) = self.pos
+            self.setMinX(x, graphX)
+
+    @pyqtSlot()
+    def on_setMinYAction_triggered(self):
+        (graphY, ok) = QInputDialog.getDouble(
+            self,
+            self.tr('Set Min Y'),
+            self.tr('Set the minimal value of Y'),
+            self.DEFAULT_VALUE,
+            self.MIN_VALUE,
+            self.MAX_VALUE,
+            self.DIGITS)
+        if ok:
+            (x, y) = self.pos
+            self.setMinY(y, graphY)
+
+    @pyqtSlot()
+    def on_setMaxXAction_triggered(self):
+        (graphX, ok) = QInputDialog.getDouble(
+            self,
+            self.tr('Set Max X'),
+            self.tr('Set the maximal value of X'),
+            self.DEFAULT_VALUE,
+            self.MIN_VALUE,
+            self.MAX_VALUE,
+            self.DIGITS)
+        if ok:
+            (x, y) = self.pos
+            self.setMaxX(x, graphX)
+
+    @pyqtSlot()
+    def on_setMaxYAction_triggered(self):
+        (graphY, ok) = QInputDialog.getDouble(
+            self,
+            self.tr('Set Origin - Y'),
+            self.tr('Set the maximal value of Y'),
+            self.DEFAULT_VALUE,
+            self.MIN_VALUE,
+            self.MAX_VALUE,
+            self.DIGITS)
+        if ok:
+            (x, y) = self.pos
+            self.setMaxY(y, graphY)
+
+    @pyqtSlot(bool)
+    def on_xAxisLogarithmicAction_triggered(self, v):
+        self.setXAxisLogarithmicAction(v)
+
+    @pyqtSlot(bool)
+    def on_yAxisLogarithmicAction_triggered(self, v):
+        self.setYAxisLogarithmicAction(v)
+
+    @pyqtSlot(bool)
+    def on_showGridAction_triggered(self, v):
+        self.showGrid = v
+        self.update()
+        self.showGridAction.setChecked(self.showGrid)
 
     @pyqtSlot()
     def zoomIn(self):

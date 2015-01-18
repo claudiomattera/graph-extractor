@@ -31,11 +31,8 @@
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
            <widget class="ImageLabel" name="imageLabel">
-            <property name="mouseTracking">
-             <bool>true</bool>
-            </property>
-            <property name="scaledContents">
-             <bool>true</bool>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
             </property>
            </widget>
           </item>

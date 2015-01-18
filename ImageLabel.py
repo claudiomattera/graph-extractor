@@ -124,12 +124,7 @@ class ImageLabel(QLabel):
             self.DIGITS)
         if ok:
             (x, y) = self.pos
-            self.minX = x
-            self.minXGraph = graphX
-
-            self.reset()
-            self.update()
-        self.ui.setMinXAction.setChecked(self.minXGraph is not None)
+            self.setMinX(x, graphX)
 
     @pyqtSlot()
     def on_setMinYAction_triggered(self):
@@ -143,12 +138,7 @@ class ImageLabel(QLabel):
             self.DIGITS)
         if ok:
             (x, y) = self.pos
-            self.minY = y
-            self.minYGraph = graphY
-
-            self.reset()
-            self.update()
-        self.ui.setMinYAction.setChecked(self.minYGraph is not None)
+            self.setMinY(y, graphY)
 
     @pyqtSlot()
     def on_setMaxXAction_triggered(self):
@@ -162,12 +152,7 @@ class ImageLabel(QLabel):
             self.DIGITS)
         if ok:
             (x, y) = self.pos
-            self.maxX = x
-            self.maxXGraph = graphX
-
-            self.reset()
-            self.update()
-        self.ui.setMaxXAction.setChecked(self.maxXGraph is not None)
+            self.setMaxX(x, graphX)
 
     @pyqtSlot()
     def on_setMaxYAction_triggered(self):
@@ -181,12 +166,7 @@ class ImageLabel(QLabel):
             self.DIGITS)
         if ok:
             (x, y) = self.pos
-            self.maxY = y
-            self.maxYGraph = graphY
-
-            self.reset()
-            self.update()
-        self.ui.setMaxYAction.setChecked(self.maxYGraph is not None)
+            self.setMaxY(y, graphY)
 
     @pyqtSlot(bool)
     def on_xAxisLogarithmicAction_toggled(self, v):
@@ -204,6 +184,38 @@ class ImageLabel(QLabel):
     def on_showGridAction_toggled(self, v):
         self.showGrid = v
         self.update()
+
+    def setMinX(self, x, graphX):
+        self.minX = x
+        self.minXGraph = graphX
+
+        self.reset()
+        self.update()
+        self.ui.setMinXAction.setChecked(self.minXGraph is not None)
+
+    def setMinY(self, y, graphY):
+        self.minY = y
+        self.minYGraph = graphY
+
+        self.reset()
+        self.update()
+        self.ui.setMinYAction.setChecked(self.minYGraph is not None)
+
+    def setMaxX(self, x, graphX):
+        self.maxX = x
+        self.maxXGraph = graphX
+
+        self.reset()
+        self.update()
+        self.ui.setMaxXAction.setChecked(self.maxXGraph is not None)
+
+    def setMaxY(self, y, graphY):
+        self.maxY = y
+        self.maxYGraph = graphY
+
+        self.reset()
+        self.update()
+        self.ui.setMaxYAction.setChecked(self.maxYGraph is not None)
 
     def clearSamples(self):
         self.samples = []

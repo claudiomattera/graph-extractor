@@ -251,8 +251,13 @@ class ImageLabel(QLabel):
             x0, y0 = self.origin
             x1, y1 = self.maxXPoint
             x2, y2 = self.maxYPoint
-            draw.drawLine(x0, y0, x1, y1)
-            draw.drawLine(x0, y0, x2, y2)
+            draw.drawLine(x0-20, y0, x1, y1)
+            draw.drawLine(x0, y0+20, x2, y2)
+            draw.drawLine(x1, y1, x1 - 10, y1 - 6)
+            draw.drawLine(x1, y1, x1 - 10, y1 + 6)
+            draw.drawLine(x2, y2, x2 - 6, y2 + 10)
+            draw.drawLine(x2, y2, x2 + 6, y2 + 10)
+
             draw.drawText(x0+10, y0-10, "(%.1f × %.3f)" % (self.minXGraph, self.minYGraph))
             draw.drawText(x1+10, y1+10, "(%.1f × %.3f)" % (self.maxXGraph, self.minYGraph))
             draw.drawText(x2+10, y2+10, "(%.1f × %.3f)" % (self.minXGraph, self.maxYGraph))

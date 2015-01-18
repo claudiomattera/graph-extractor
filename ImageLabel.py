@@ -22,50 +22,14 @@ class ImageLabel(QLabel):
         self.showGrid = True
 
         self.originalPixmap = None
+        self.pos = None
 
         self.xLogarithmic = False
         self.yLogarithmic = False
 
         self.settings = QSettings()
 
-        self.setMinXAction = QAction(self.tr('Set Min X'), self)
-        self.setMinXAction.setCheckable(True)
-        self.setMinYAction = QAction(self.tr('Set Min Y'), self)
-        self.setMinYAction.setCheckable(True)
-        self.setMaxXAction = QAction(self.tr('Set Max X'), self)
-        self.setMaxXAction.setCheckable(True)
-        self.setMaxYAction = QAction(self.tr('Set Max Y'), self)
-        self.setMaxYAction.setCheckable(True)
-        self.showGridAction = QAction(self.tr('Show Grid'), self)
-        self.showGridAction.setCheckable(True)
-        self.xAxisLogarithmicAction = QAction(self.tr('X Axis Logarithmic'), self)
-        self.xAxisLogarithmicAction.setCheckable(True)
-        self.yAxisLogarithmicAction = QAction(self.tr('Y Axis Logarithmic'), self)
-        self.yAxisLogarithmicAction.setCheckable(True)
-
-        self.menu = QMenu(self)
-
-        self.menu.addAction(self.setMinXAction)
-        self.menu.addAction(self.setMinYAction)
-        self.menu.addAction(self.setMaxXAction)
-        self.menu.addAction(self.setMaxYAction)
-        self.menu.addSeparator()
-        self.menu.addAction(self.showGridAction)
-        self.menu.addAction(self.xAxisLogarithmicAction)
-        self.menu.addAction(self.yAxisLogarithmicAction)
-
-        self.pos = None
-
-        self.setMinXAction.triggered.connect(self.on_setMinXAction_triggered)
-        self.setMinYAction.triggered.connect(self.on_setMinYAction_triggered)
-        self.setMaxXAction.triggered.connect(self.on_setMaxXAction_triggered)
-        self.setMaxYAction.triggered.connect(self.on_setMaxYAction_triggered)
-        self.showGridAction.triggered.connect(self.on_showGridAction_triggered)
-        self.xAxisLogarithmicAction.triggered.connect(
-            self.on_xAxisLogarithmicAction_triggered)
-        self.yAxisLogarithmicAction.triggered.connect(
-            self.on_yAxisLogarithmicAction_triggered)
-
+        self.createMenu()
         self.on_showGridAction_triggered(True)
 
         self.reset()
@@ -261,6 +225,44 @@ class ImageLabel(QLabel):
                     draw.drawLine(x0, y0, x1, y1)
 
         draw.end()
+
+    def createMenu(self):
+        self.setMinXAction = QAction(self.tr('Set Min X'), self)
+        self.setMinXAction.setCheckable(True)
+        self.setMinYAction = QAction(self.tr('Set Min Y'), self)
+        self.setMinYAction.setCheckable(True)
+        self.setMaxXAction = QAction(self.tr('Set Max X'), self)
+        self.setMaxXAction.setCheckable(True)
+        self.setMaxYAction = QAction(self.tr('Set Max Y'), self)
+        self.setMaxYAction.setCheckable(True)
+        self.showGridAction = QAction(self.tr('Show Grid'), self)
+        self.showGridAction.setCheckable(True)
+        self.xAxisLogarithmicAction = QAction(self.tr('X Axis Logarithmic'), self)
+        self.xAxisLogarithmicAction.setCheckable(True)
+        self.yAxisLogarithmicAction = QAction(self.tr('Y Axis Logarithmic'), self)
+        self.yAxisLogarithmicAction.setCheckable(True)
+
+        self.menu = QMenu(self)
+
+        self.menu.addAction(self.setMinXAction)
+        self.menu.addAction(self.setMinYAction)
+        self.menu.addAction(self.setMaxXAction)
+        self.menu.addAction(self.setMaxYAction)
+        self.menu.addSeparator()
+        self.menu.addAction(self.showGridAction)
+        self.menu.addAction(self.xAxisLogarithmicAction)
+        self.menu.addAction(self.yAxisLogarithmicAction)
+
+        self.setMinXAction.triggered.connect(self.on_setMinXAction_triggered)
+        self.setMinYAction.triggered.connect(self.on_setMinYAction_triggered)
+        self.setMaxXAction.triggered.connect(self.on_setMaxXAction_triggered)
+        self.setMaxYAction.triggered.connect(self.on_setMaxYAction_triggered)
+        self.showGridAction.triggered.connect(self.on_showGridAction_triggered)
+        self.xAxisLogarithmicAction.triggered.connect(
+            self.on_xAxisLogarithmicAction_triggered)
+        self.yAxisLogarithmicAction.triggered.connect(
+            self.on_yAxisLogarithmicAction_triggered)
+
 
     def ready(self):
         ls = [

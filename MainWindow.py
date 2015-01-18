@@ -29,6 +29,8 @@ class MainWindow(QMainWindow):
         self.ui.zoomInAction.triggered.connect(self.ui.imageLabel.zoomIn)
         self.ui.zoomOutAction.triggered.connect(self.ui.imageLabel.zoomOut)
 
+        self.enableSamplesActions(False)
+
     @pyqtSlot()
     def on_openAction_triggered(self):
         dir = self.settings.value(
@@ -70,6 +72,7 @@ class MainWindow(QMainWindow):
     def on_clearAction_triggered(self):
         self.ui.listWidget.clear()
         self.ui.imageLabel.clearSamples()
+        self.enableSamplesActions(False)
 
     @pyqtSlot()
     def on_copyAction_triggered(self):
@@ -124,6 +127,7 @@ class MainWindow(QMainWindow):
         item.setData(Qt.UserRole, x)
         item.setData(Qt.UserRole + 1, y)
         self.ui.listWidget.addItem(item)
+        self.enableSamplesActions(True)
 
     def getCoordinates(self):
         items = self.ui.listWidget.findItems('*', Qt.MatchWildcard)
@@ -139,6 +143,12 @@ class MainWindow(QMainWindow):
         lines = map(lambda coordinate: "%f\t%f" % coordinate, coordinates)
         return 'x\ty\n' + '\n'.join(lines)
 
+    def enableSamplesActions(self, enable):
+        self.ui.saveAction.setEnabled(enable)
+        self.ui.clearAction.setEnabled(enable)
+        self.ui.copyAction.setEnabled(enable)
+        self.ui.pathLengthAction.setEnabled(enable)
+        self.ui.polygonAreaAction.setEnabled(enable)
 
 if __name__ == '__main__':
     vertices = [(0.72, 2.28), (2.66, 4.71), (5., 3.5), (3.63, 2.52), (4., 1.6), (1.9,  1.)]

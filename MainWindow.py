@@ -29,6 +29,7 @@ class MainWindow(QMainWindow):
         self.ui.zoomInAction.triggered.connect(self.ui.imageLabel.zoomIn)
         self.ui.zoomOutAction.triggered.connect(self.ui.imageLabel.zoomOut)
 
+        self.enableImageActions(False)
         self.enableSamplesActions(False)
 
     @pyqtSlot()
@@ -45,6 +46,7 @@ class MainWindow(QMainWindow):
                 Settings.LAST_DIRECTORY_KEY, QFileInfo(filename).absolutePath())
             self.ui.imageLabel.loadImage(filename)
             self.statusBar().showMessage(QDir.toNativeSeparators(filename))
+            self.enableImageActions(True)
 
     @pyqtSlot()
     def on_saveAction_triggered(self):
@@ -149,6 +151,10 @@ class MainWindow(QMainWindow):
         self.ui.copyAction.setEnabled(enable)
         self.ui.pathLengthAction.setEnabled(enable)
         self.ui.polygonAreaAction.setEnabled(enable)
+
+    def enableImageActions(self, enable):
+        self.ui.zoomInAction.setEnabled(enable)
+        self.ui.zoomOutAction.setEnabled(enable)
 
 if __name__ == '__main__':
     vertices = [(0.72, 2.28), (2.66, 4.71), (5., 3.5), (3.63, 2.52), (4., 1.6), (1.9,  1.)]

@@ -40,9 +40,25 @@ class MainWindow(QMainWindow):
             self.tr('Images (*.png *.jpg)'))
         if filename:
             self.settings.setValue(
-                Settings.LAST_DIRECTORY_KEY, QFileInfo(filename).canonicalPath())
+                Settings.LAST_DIRECTORY_KEY, QFileInfo(filename).absolutePath())
             self.ui.imageLabel.loadImage(filename)
             self.statusBar().showMessage(QDir.toNativeSeparators(filename))
+
+    @pyqtSlot()
+    def on_saveAction_triggered(self):
+        dir = self.settings.value(
+            Settings.LAST_DIRECTORY_KEY, Settings.DEFAULT_LAST_DIRECTORY)
+        (filename, _) = QFileDialog.getSaveFileName(
+            self,
+            self.tr('Open Image'),
+            dir,
+            self.tr('Comma Separated Values files (*.csv)\nText files (*.txt)\n'))
+        if filename:
+            self.settings.setValue(
+                Settings.LAST_DIRECTORY_KEY, QFileInfo(filename).absolutePath())
+            text = self.getCoordinatesAsCsv()
+            with open(filename, 'w') as file:
+                file.write(text)
 
     @pyqtSlot()
     def on_settingsAction_triggered(self):
@@ -54,6 +70,12 @@ class MainWindow(QMainWindow):
     def on_clearAction_triggered(self):
         self.ui.listWidget.clear()
         self.ui.imageLabel.clearSamples()
+
+    @pyqtSlot()
+    def on_copyAction_triggered(self):
+        text = self.getCoordinatesAsCsv()
+        clipboard = QApplication.clipboard()
+        clipboard.setText(text)
 
     @pyqtSlot()
     def on_aboutQtAction_triggered(self):
@@ -104,6 +126,12 @@ class MainWindow(QMainWindow):
         item.setData(Qt.UserRole, x)
         item.setData(Qt.UserRole + 1, y)
         self.ui.listWidget.addItem(item)
+
+    def getCoordinatesAsCsv(self):
+        items = self.ui.listWidget.findItems('*', Qt.MatchWildcard)
+        coordinates = map(lambda item: (item.data(Qt.UserRole), item.data(Qt.UserRole + 1)), items)
+        lines = map(lambda coordinate: "%f,%f" % coordinate, coordinates)
+        return 'x,y\n' + '\n'.join(lines)
 
 
 if __name__ == '__main__':

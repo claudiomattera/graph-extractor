@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="/">
+    <file>images/export.svg</file>
+    <file>images/copy.svg</file>
     <file>images/path.svg</file>
     <file>images/clear.svg</file>
     <file>images/area.svg</file>

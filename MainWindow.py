@@ -73,7 +73,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_copyAction_triggered(self):
-        text = self.getCoordinatesAsCsv()
+        text = self.getCoordinatesAsTsv()
         clipboard = QApplication.clipboard()
         clipboard.setText(text)
 
@@ -133,6 +133,11 @@ class MainWindow(QMainWindow):
         coordinates = self.getCoordinates()
         lines = map(lambda coordinate: "%f,%f" % coordinate, coordinates)
         return 'x,y\n' + '\n'.join(lines)
+
+    def getCoordinatesAsTsv(self):
+        coordinates = self.getCoordinates()
+        lines = map(lambda coordinate: "%f\t%f" % coordinate, coordinates)
+        return 'x\ty\n' + '\n'.join(lines)
 
 
 if __name__ == '__main__':

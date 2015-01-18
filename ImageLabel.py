@@ -23,25 +23,10 @@ class ImageLabel(QLabel):
 
         self.originalPixmap = None
 
-        self.scale = 1.
-
         self.xLogarithmic = False
         self.yLogarithmic = False
 
-        self.samples = []
-
         self.settings = QSettings()
-
-        self.minX = None
-        self.minXGraph = None
-        self.maxX = None
-        self.maxXGraph = None
-
-        self.minY = None
-        self.minYGraph = None
-        self.maxY = None
-        self.maxYGraph = None
-
 
         self.setMinXAction = QAction(self.tr('Set Min X'), self)
         self.setMinXAction.setCheckable(True)
@@ -83,23 +68,34 @@ class ImageLabel(QLabel):
 
         self.on_showGridAction_triggered(True)
 
+        self.reset()
+
     def loadImage(self, filename):
         self.originalPixmap = QPixmap(filename)
+        self.reset()
+
+    def reset(self):
+        self.minX = None
+        self.minXGraph = None
+        self.maxX = None
+        self.maxXGraph = None
+
+        self.minY = None
+        self.minYGraph = None
+        self.maxY = None
+        self.maxYGraph = None
+
+        self.samples = []
+
+        self.scale = 1.
+
+        self.setMinXAction.setChecked(False)
+        self.setMaxXAction.setChecked(False)
+        self.setMinYAction.setChecked(False)
+        self.setMaxYAction.setChecked(False)
+
         self.resizeImage()
         self.update()
-
-    def ready(self):
-        ls = [
-            self.minX,
-            self.minXGraph,
-            self.maxX,
-            self.maxXGraph,
-            self.minY,
-            self.minYGraph,
-            self.maxY,
-            self.maxYGraph
-            ]
-        return all(x is not None for x in ls)
 
     def scaleImage(self, k):
         self.scale *= k
@@ -279,6 +275,19 @@ class ImageLabel(QLabel):
                     draw.drawLine(x0, y0, x1, y1)
 
         draw.end()
+
+    def ready(self):
+        ls = [
+            self.minX,
+            self.minXGraph,
+            self.maxX,
+            self.maxXGraph,
+            self.minY,
+            self.minYGraph,
+            self.maxY,
+            self.maxYGraph
+            ]
+        return all(x is not None for x in ls)
 
     @pyqtSlot(float, float)
     def on_label_mouseMoved(self, x, y):

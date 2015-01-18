@@ -47,6 +47,7 @@ class MainWindow(QMainWindow):
             self.ui.imageLabel.loadImage(filename)
             self.statusBar().showMessage(QDir.toNativeSeparators(filename))
             self.enableImageActions(True)
+            self.on_clearAction_triggered()
 
     @pyqtSlot()
     def on_saveAction_triggered(self):

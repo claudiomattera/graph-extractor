@@ -25,9 +25,9 @@ In order to run the program first a couple of files must be processed by PyQt. R
 
 The the program can be started with the command
 
-    python main.py
+    python main.pyw
 
-or by double clicking the file `main.py`.
+or by double clicking the file `main.pyw`.
 
 [python]: http://www.python.org/
 [pyqt5]: http://www.riverbankcomputing.com/software/pyqt/intro

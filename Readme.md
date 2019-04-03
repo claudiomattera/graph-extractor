@@ -1,7 +1,7 @@
 Graph Extractor
 ===============
 
-A simple program that allows to extract coordinates from an image of a graph.
+A simple program to extract coordinates from an image of a graph.
 
 Usage
 -----
